@@ -51,10 +51,8 @@ class StudentController extends AbstractController
     /**
      * @Route("/student/{id}", name="student_show")
      */
-    public function showAction($id)
+    public function showAction(Student $student)
     {
-        $em = $this->getDoctrine()->getManager();
-        $student = $em->getRepository('App:Student')->find($id);
 
         $template = 'student/show.html.twig';
         $args = [
@@ -71,14 +69,12 @@ class StudentController extends AbstractController
     /**
      * @Route("/student/delete/{id}")
      */
-    public function deleteAction($id)
+    public function deleteAction(Student $student)
     {
-        // entity manager
-        $em = $this->getDoctrine()->getManager();
-        $studentRepository = $this->getDoctrine()->getRepository('App:Student');
+        // store ID so we can still refer to it after object/row deleted
+        $id = $student->getId();
 
-        // find thge student with this ID
-        $student = $studentRepository->find($id);
+        $em = $this->getDoctrine()->getManager();
 
         // tells Doctrine you want to (eventually) delete the Student (no queries yet)
         $em->remove($student);
@@ -86,22 +82,15 @@ class StudentController extends AbstractController
         // actually executes the queries (i.e. the DELETE query)
         $em->flush();
 
-        return new Response('Deleted student with id '.$id);
+        return new Response('Deleted student with id = '.$id);
     }
 
     /**
      * @Route("/student/update/{id}/{newFirstName}/{newSurname}")
      */
-    public function updateAction($id, $newFirstName, $newSurname)
+    public function updateAction(Student $student, $newFirstName, $newSurname)
     {
         $em = $this->getDoctrine()->getManager();
-        $student = $em->getRepository('App:Student')->find($id);
-
-        if (!$student) {
-            throw $this->createNotFoundException(
-                'No student found for id '.$id
-            );
-        }
 
         $student->setFirstName($newFirstName);
         $student->setSurname($newSurname);
